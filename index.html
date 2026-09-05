@@ -66,6 +66,54 @@
   <script>
     "use strict";
     // Код писать здесь
+    const btnEl = document.querySelector('.add-form-button');
+    btnEl.disabled = true;
+    const inputEl = document.querySelector('.add-form-name');
+    const commentsEl = document.querySelector('.comments');
+    const newcomEl = document.querySelector('.add-form-text');
+    inputEl.addEventListener('change', () => {
+      if(inputEl.value.trim() === ""|| newcomEl.value.trim() === "") {
+        btnEl.disabled = true;
+      } else {
+        btnEl.disabled = false;
+      }
+    });
+    newcomEl.addEventListener('change', () => {
+      if(newcomEl.value.trim() === "" || inputEl.value.trim() === "") {
+        btnEl.disabled = true;
+      } else {
+        btnEl.disabled = false;
+      }
+    });
+    btnEl.addEventListener('click', () => {
+      if(inputEl.value.trim() === "" || newcomEl.value.trim() === "") {
+        return false;
+      }
+      let currentDate = new Date().toLocaleString('ru-RU', {
+        day: '2-digit', month: '2-digit', year: '2-digit', 
+        hour: '2-digit', minute:'2-digit'
+        }).replace(',', '');
+      const newList = document.createElement('li');
+      newList.classList.add('comment');
+      newList.innerHTML = `
+        <div class="comment-header">
+          <div>${inputEl.value}</div>
+          <div>${currentDate}</div>
+        </div>
+        <div class="comment-body">
+          <div class="comment-text">
+            ${newcomEl.value}
+          </div>
+        </div>
+        <div class="comment-footer">
+          <div class="likes">
+            <span class="likes-counter">0</span>
+            <button class="like-button"></button>
+          </div>
+        </div>
+      `
+      commentsEl.appendChild(newList);
+    });
     console.log("It works!");
   </script>
 </html>
