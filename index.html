@@ -9,40 +9,6 @@
   <body>
     <div class="container">
       <ul class="comments">
-        <li class="comment">
-          <div class="comment-header">
-            <div>Глеб Фокин</div>
-            <div>12.02.22 12:18</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              Это будет первый комментарий на этой странице
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">3</span>
-              <button class="like-button"></button>
-            </div>
-          </div>
-        </li>
-        <li class="comment">
-          <div class="comment-header">
-            <div>Варвара Н.</div>
-            <div>13.02.22 19:22</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              Мне нравится как оформлена эта страница! ❤
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">75</span>
-              <button class="like-button -active-like"></button>
-            </div>
-          </div>
-        </li>
       </ul>
       <div class="add-form">
         <input
@@ -61,11 +27,8 @@
         </div>
       </div>
     </div>
-  </body>
-
-  <script>
+    <script>
     "use strict";
-    // Код писать здесь
     const btnEl = document.querySelector('.add-form-button');
     btnEl.disabled = true;
     const inputEl = document.querySelector('.add-form-name');
@@ -85,6 +48,60 @@
         btnEl.disabled = false;
       }
     });
+    const commentsArray = [
+      {name: "Глеб Фокин",
+       date: "12.02.22 12:18",
+       comment: "Это будет первый комментарий на этой странице",
+       likesCount: 3,
+       likesPresence: false
+      },
+      {name: "Варвара Н.",
+       date: "13.02.22 19:22",
+       comment: "Мне нравится как оформлена эта страница! ❤",
+       likesCount: 75,
+       likesPresence: true
+      }
+    ];
+    const renderComments = () => {
+      const commentsHtml = commentsArray.map((comment, index) => {
+        return `
+         <li class="comment">
+          <div class="comment-header">
+            <div>${comment.name}</div>
+            <div>${comment.date}</div>
+          </div>
+          <div class="comment-body">
+            <div class="comment-text">
+              ${comment.comment}
+            </div>
+          </div>
+          <div class="comment-footer">
+            <div class="likes">
+              <span class="likes-counter">${comment.likesCount}</span>
+              <button data-index="${index}" class="like-button ${comment.likesPresence ? " -active-like" : ""}"></button>
+            </div>
+          </div> 
+         </li>
+        `
+      }).join("");
+      commentsEl.innerHTML = commentsHtml;
+      const likesElements = document.querySelectorAll(".like-button");
+      for (const likesElement of likesElements) {
+        likesElement.addEventListener("click", () => {
+          const index = likesElement.dataset.index;
+          const comment = commentsArray[index]
+          if(comment.likesPresence === true) {
+            comment.likesPresence = false;
+            comment.likesCount--;
+          } else {
+            comment.likesPresence = true;
+            comment.likesCount++;
+          }
+          renderComments();
+        });
+      };
+    }
+    renderComments();
     btnEl.addEventListener('click', () => {
       if(inputEl.value.trim() === "" || newcomEl.value.trim() === "") {
         return false;
@@ -92,30 +109,19 @@
       let currentDate = new Date().toLocaleString('ru-RU', {
         day: '2-digit', month: '2-digit', year: '2-digit', 
         hour: '2-digit', minute:'2-digit'
-        }).replace(',', '');
-      const newList = document.createElement('li');
-      newList.classList.add('comment');
-      newList.innerHTML = `
-        <div class="comment-header">
-          <div>${inputEl.value}</div>
-          <div>${currentDate}</div>
-        </div>
-        <div class="comment-body">
-          <div class="comment-text">
-            ${newcomEl.value}
-          </div>
-        </div>
-        <div class="comment-footer">
-          <div class="likes">
-            <span class="likes-counter">0</span>
-            <button class="like-button"></button>
-          </div>
-        </div>
-      `
-      commentsEl.appendChild(newList);
+      }).replace(',', '');
+      const newObject = { 
+       name: inputEl.value,
+       date: currentDate,
+       comment: newcomEl.value,
+       likesCount: 0,
+       likesPresence: false 
+      };
+      commentsArray.push(newObject);
+      renderComments();
     });
-    console.log("It works!");
-  </script>
+    </script>
+  </body>
 </html>
 
 
