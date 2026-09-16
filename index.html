@@ -65,13 +65,13 @@
     const renderComments = () => {
       const commentsHtml = commentsArray.map((comment, index) => {
         return `
-         <li class="comment">
+         <li data-index="${index}" class="comment">
           <div class="comment-header">
             <div>${comment.name}</div>
             <div>${comment.date}</div>
           </div>
           <div class="comment-body">
-            <div class="comment-text">
+            <div data-index="${index}" class="comment-text">
               ${comment.comment}
             </div>
           </div>
@@ -85,11 +85,13 @@
         `
       }).join("");
       commentsEl.innerHTML = commentsHtml;
+      const rendcommentsEl = document.querySelectorAll('.comment')
       const likesElements = document.querySelectorAll(".like-button");
       for (const likesElement of likesElements) {
-        likesElement.addEventListener("click", () => {
+        likesElement.addEventListener("click", (e) => {
           const index = likesElement.dataset.index;
-          const comment = commentsArray[index]
+          const comment = commentsArray[index];
+          e.stopPropagation();
           if(comment.likesPresence === true) {
             comment.likesPresence = false;
             comment.likesCount--;
@@ -100,6 +102,24 @@
           renderComments();
         });
       };
+      for (const rendcommentEl of rendcommentsEl) {
+        rendcommentEl.addEventListener("click", () => {
+          const index = rendcommentEl.dataset.index;
+          const strangCom = commentsArray[index];
+          newcomEl.value = `
+          Ответ на комментарий:
+             ↪️${strangCom.name}
+             ↪️${strangCom.comment}
+          Текст ответа:
+                    
+          ` 
+          if (inputEl.value.trim() !== "") {
+            btnEl.disabled = false;
+          } else {
+            btnEl.disabled = true;
+          }
+        });
+      }
     }
     renderComments();
     btnEl.addEventListener('click', () => {
@@ -111,14 +131,16 @@
         hour: '2-digit', minute:'2-digit'
       }).replace(',', '');
       const newObject = { 
-       name: inputEl.value,
+       name: inputEl.value.replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
        date: currentDate,
-       comment: newcomEl.value,
+       comment: newcomEl.value.replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
        likesCount: 0,
        likesPresence: false 
       };
       commentsArray.push(newObject);
       renderComments();
+      inputEl.value = "";
+      newcomEl.value = "";
     });
     </script>
   </body>
