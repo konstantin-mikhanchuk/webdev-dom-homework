@@ -1,5 +1,6 @@
 import { renderComments } from './render.js'
 import { addComment } from './array.js'
+import { escapeHtml } from './utils.js'
 export function btnFunc() {
     const btnEl = document.querySelector('.add-form-button')
     btnEl.addEventListener('click', () => {
@@ -18,11 +19,9 @@ export function btnFunc() {
             })
             .replace(',', '')
         const newObject = {
-            name: inputEl.value.replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+            name: escapeHtml(inputEl.value),
             date: currentDate,
-            comment: newcomEl.value
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;'),
+            comment: escapeHtml(newcomEl.value),
             likesCount: 0,
             likesPresence: false,
         }
