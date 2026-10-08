@@ -1,26 +1,35 @@
-import { commentsArray } from './array.js';
+import { commentsArray } from './array.js'
 export const renderComments = () => {
-    const btnEl = document.querySelector('.add-form-button');
-    const inputEl = document.querySelector('.add-form-name');
-    const commentsEl = document.querySelector('.comments');
-    const newcomEl = document.querySelector('.add-form-text');
+    const btnEl = document.querySelector('.add-form-button')
+    const inputEl = document.querySelector('.add-form-name')
+    const commentsEl = document.querySelector('.comments')
+    const newcomEl = document.querySelector('.add-form-text')
     const commentsHtml = commentsArray
         .map((comment, index) => {
+            const createDate = new Date(comment.date)
+                .toLocaleString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                })
+                .replace(',', '')
             return `
          <li data-index="${index}" class="comment">
           <div class="comment-header">
-            <div>${comment.name}</div>
-            <div>${comment.date}</div>
+            <div>${comment.author.name}</div>
+            <div>${createDate}</div>
           </div>
           <div class="comment-body">
             <div data-index="${index}" class="comment-text">
-              ${comment.comment}
+              ${comment.text}
             </div>
           </div>
           <div class="comment-footer">
             <div class="likes">
-              <span class="likes-counter">${comment.likesCount}</span>
-              <button data-index="${index}" class="like-button ${comment.likesPresence ? ' -active-like' : ''}"></button>
+              <span class="likes-counter">${comment.likes}</span>
+              <button data-index="${index}" class="like-button ${comment.isLiked ? ' -active-like' : ''}"></button>
             </div>
           </div> 
          </li>
@@ -35,12 +44,12 @@ export const renderComments = () => {
             const index = likesElement.dataset.index
             const comment = commentsArray[index]
             e.stopPropagation()
-            if (comment.likesPresence === true) {
-                comment.likesPresence = false
-                comment.likesCount--
+            if (comment.isLiked === true) {
+                comment.isLiked = false
+                comment.likes--
             } else {
-                comment.likesPresence = true
-                comment.likesCount++
+                comment.isLiked = true
+                comment.likes++
             }
             renderComments()
         })
@@ -51,8 +60,8 @@ export const renderComments = () => {
             const strangCom = commentsArray[index]
             newcomEl.value = `
           Ответ на комментарий:
-             ↪️${strangCom.name}
-             ↪️${strangCom.comment}
+             ↪️${strangCom.author.name}
+             ↪️${strangCom.text}
           Текст ответа:
                     
           `

@@ -1,7 +1,5 @@
-import { renderComments } from './render.js'
-import { addComment } from './array.js'
 import { escapeHtml } from './utils.js'
-export function btnFunc() {
+export function btnFunc(fetchAndRenderComments) {
     const btnEl = document.querySelector('.add-form-button')
     btnEl.addEventListener('click', () => {
         const inputEl = document.querySelector('.add-form-name')
@@ -25,9 +23,24 @@ export function btnFunc() {
             likesCount: 0,
             likesPresence: false,
         }
-        addComment(newObject)
-        renderComments()
-        inputEl.value = ''
-        newcomEl.value = ''
+
+        fetch(
+            'https://wedev-api.sky.pro/api/v1/konstantin-mikhanchuk/comments',
+            {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: newObject.name,
+                    text: newObject.comment,
+                }),
+            },
+        )
+            .then((response) => {
+                return response.json()
+            })
+            .then(() => {
+                fetchAndRenderComments()
+                inputEl.value = ''
+                newcomEl.value = ''
+            })
     })
 }
