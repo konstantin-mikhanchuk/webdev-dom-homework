@@ -1,4 +1,5 @@
 import { escapeHtml } from './utils.js'
+import { postComment } from './api.js'
 export function btnFunc(fetchAndRenderComments) {
     const btnEl = document.querySelector('.add-form-button')
     btnEl.addEventListener('click', () => {
@@ -28,26 +29,12 @@ export function btnFunc(fetchAndRenderComments) {
         loadingEl.textContent = 'Комментарий загружается...'
         addFormEl.style.display = 'none'
         addFormEl.parentElement.appendChild(loadingEl)
-
-        fetch(
-            'https://wedev-api.sky.pro/api/v1/konstantin-mikhanchuk/comments',
-            {
-                method: 'POST',
-                body: JSON.stringify({
-                    name: newObject.name,
-                    text: newObject.comment,
-                }),
-            },
-        )
-            .then((response) => {
-                return response.json()
-            })
-            .then(() => {
-                fetchAndRenderComments()
-                loadingEl.remove()
-                addFormEl.style.display = 'flex'
-                inputEl.value = ''
-                newcomEl.value = ''
-            })
+        postComment(newObject.name, newObject.comment).then(() => {
+            fetchAndRenderComments()
+            loadingEl.remove()
+            addFormEl.style.display = 'flex'
+            inputEl.value = ''
+            newcomEl.value = ''
+        })
     })
 }
