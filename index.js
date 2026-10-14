@@ -1,20 +1,7 @@
-import { update } from './modules/array.js'
-import { renderComments } from './modules/render.js'
 import { initValidation } from './modules/validation.js'
 import { btnFunc } from './modules/btn.js'
+import { fetchAndRenderComments } from './modules/api.js'
 
-function fetchAndRenderComments() {
-    fetch('https://wedev-api.sky.pro/api/v1/konstantin-mikhanchuk/comments', {
-        method: 'GET',
-    })
-        .then((response) => {
-            return response.json()
-        })
-        .then((data) => {
-            update(data.comments)
-            renderComments()
-        })
-}
-fetchAndRenderComments();
+fetchAndRenderComments(true)
 initValidation()
 btnFunc(fetchAndRenderComments)

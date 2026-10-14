@@ -1,9 +1,11 @@
 import { escapeHtml } from './utils.js'
+import { postComment } from './api.js'
 export function btnFunc(fetchAndRenderComments) {
     const btnEl = document.querySelector('.add-form-button')
     btnEl.addEventListener('click', () => {
         const inputEl = document.querySelector('.add-form-name')
         const newcomEl = document.querySelector('.add-form-text')
+        const addFormEl = document.querySelector('.add-form')
         if (inputEl.value.trim() === '' || newcomEl.value.trim() === '') {
             return false
         }
@@ -23,24 +25,16 @@ export function btnFunc(fetchAndRenderComments) {
             likesCount: 0,
             likesPresence: false,
         }
-
-        fetch(
-            'https://wedev-api.sky.pro/api/v1/konstantin-mikhanchuk/comments',
-            {
-                method: 'POST',
-                body: JSON.stringify({
-                    name: newObject.name,
-                    text: newObject.comment,
-                }),
-            },
-        )
-            .then((response) => {
-                return response.json()
-            })
-            .then(() => {
-                fetchAndRenderComments()
-                inputEl.value = ''
-                newcomEl.value = ''
-            })
+        const loadingEl = document.createElement('div')
+        loadingEl.textContent = 'Комментарий загружается...'
+        addFormEl.style.display = 'none'
+        addFormEl.parentElement.appendChild(loadingEl)
+        postComment(newObject.name, newObject.comment).then(() => {
+            fetchAndRenderComments()
+            loadingEl.remove()
+            addFormEl.style.display = 'flex'
+            inputEl.value = ''
+            newcomEl.value = ''
+        })
     })
 }
