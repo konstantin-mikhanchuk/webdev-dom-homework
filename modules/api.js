@@ -15,6 +15,9 @@ export function fetchAndRenderComments(isInitial) {
         method: 'GET',
     })
         .then((response) => {
+            if (response.status === 500) {
+                throw new Error('SERVER_ERROR')
+            }
             return response.json()
         })
         .then((data) => {
@@ -26,6 +29,18 @@ export function fetchAndRenderComments(isInitial) {
             }
             renderComments()
         })
+        .catch((error) => {
+            if (error.message === 'SERVER_ERROR') {
+                alert('Сервер сломался, попробуй позже')
+            } else {
+                alert('Кажется, у вас сломался интернет, попробуйте позже')
+            }
+            if (isInitial && loadingEl) {
+                loadingEl.remove()
+                commentsEl.style.display = 'flex'
+                addFormEl.style.display = 'flex'
+            }
+        })
 }
 export function postComment(name, comment) {
     return fetch(
@@ -35,9 +50,16 @@ export function postComment(name, comment) {
             body: JSON.stringify({
                 name: name,
                 text: comment,
+                forceError: true,
             }),
         },
     ).then((response) => {
+        if (response.status === 400) {
+            throw new Error('BAD_REQUEST')
+        }
+        if (response.status === 500) {
+            throw new Error('SERVER_ERROR')
+        }
         return response.json()
     })
 }
