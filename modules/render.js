@@ -1,9 +1,9 @@
 import { commentsArray } from './array.js'
+import { getToken, getUserName } from './user.js'
+import { renderLogin } from './loginComponent.js'
+import { postComment, fetchAndRenderComments } from './api.js'
 export const renderComments = () => {
-    const btnEl = document.querySelector('.add-form-button')
-    const inputEl = document.querySelector('.add-form-name')
     const commentsEl = document.querySelector('.comments')
-    const newcomEl = document.querySelector('.add-form-text')
     const commentsHtml = commentsArray
         .map((comment, index) => {
             const createDate = new Date(comment.date)
@@ -37,13 +37,17 @@ export const renderComments = () => {
         })
         .join('')
     commentsEl.innerHTML = commentsHtml
-    const rendcommentsEl = document.querySelectorAll('.comment')
     const likesElements = document.querySelectorAll('.like-button')
     for (const likesElement of likesElements) {
         likesElement.addEventListener('click', (e) => {
             const index = likesElement.dataset.index
             const comment = commentsArray[index]
             e.stopPropagation()
+            if (!getToken()) {
+                alert('Лайкать могут только авторизированные пользователи')
+                return
+            }
+
             if (comment.isLiked === true) {
                 comment.isLiked = false
                 comment.likes--
@@ -54,8 +58,14 @@ export const renderComments = () => {
             renderComments()
         })
     }
+    const rendcommentsEl = document.querySelectorAll('.comment')
     for (const rendcommentEl of rendcommentsEl) {
         rendcommentEl.addEventListener('click', () => {
+            if (!getToken()) {
+                alert('Авторизуйтесь, чтобы ответить!')
+                return
+            }
+            const newcomEl = document.getElementById('comment-text-input')
             const index = rendcommentEl.dataset.index
             const strangCom = commentsArray[index]
             newcomEl.value = `
@@ -65,11 +75,87 @@ export const renderComments = () => {
           Текст ответа:
                     
           `
-            if (inputEl.value.trim() !== '') {
-                btnEl.disabled = false
-            } else {
-                btnEl.disabled = true
-            }
         })
     }
+
+    const formContainer = document.querySelector('.add-form-container')
+    if (!formContainer) return
+    if (!getToken()) {
+        formContainer.innerHTML = `
+            <p class="comment-text">
+                Чтобы добавить 
+                комментарий, 
+                <a href="#" 
+                   id="go-to-login">
+                    авторизуйтесь
+                </a>
+            </p>
+        `
+        document
+            .getElementById('go-to-login')
+            .addEventListener('click', (e) => {
+                e.preventDefault()
+                renderLogin()
+            })
+    } else {
+        formContainer.innerHTML = `
+            <div class="add-form">
+                <input
+                  type="text"
+                  class="add-form-name"
+                  id="author-name-input"
+                  value="${getUserName()}"
+                  readonly
+                />
+                <textarea
+                  class="add-form-text"
+                  id="comment-text-input"
+                  placeholder="Введите ваш коментарий"
+                  rows="4"
+                ></textarea>
+                <div class="add-form-row">
+                  <button 
+                    class="add-form-button" 
+                    id="submit-btn"
+                  >
+                     Написать
+                  </button>
+                </div>
+            </div>
+        `
+        initFormSubmitLogic()
+    }
+}
+function initFormSubmitLogic() {
+    const btnEl = document.getElementById('submit-btn')
+    const newcomEl = document.getElementById('comment-text-input')
+    const addFormEl = document.querySelector('.add-form')
+    btnEl.addEventListener('click', () => {
+        if (newcomEl.value.trim() === '') {
+            alert('Текст комментария не может быть пустым')
+            return
+        }
+        const loadingEl = document.createElement('div')
+        loadingEl.textContent = 'Комментарий загружается'
+        addFormEl.style.display = 'none'
+        addFormEl.parentElement.appendChild(loadingEl)
+        postComment(newcomEl.value)
+            .then(() => {
+                fetchAndRenderComments(false)
+                loadingEl.remove()
+                addFormEl.style.display = 'flex'
+                newcomEl.value = ''
+            })
+            .catch((error) => {
+                loadingEl.remove()
+                addFormEl.style.display = 'flex'
+                if (error.message === 'BAD_REQUEST') {
+                    alert('Комментарий должен быть не короче 3 символов')
+                } else if (error.message === 'SERVER_ERROR') {
+                    alert('Сервер сломался, попробуй позже')
+                } else {
+                    alert('Кажется, у вас сломался интернет')
+                }
+            })
+    })
 }

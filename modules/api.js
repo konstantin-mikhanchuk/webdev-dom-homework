@@ -1,5 +1,7 @@
 import { update } from './array.js'
 import { renderComments } from './render.js'
+import { getToken } from './user.js'
+const baseUrl = 'https://wedev-api.sky.pro/api/v2/konstantin-mikhanchuk'
 export function fetchAndRenderComments(isInitial) {
     const commentsEl = document.querySelector('.comments')
     const addFormEl = document.querySelector('.add-form')
@@ -8,10 +10,12 @@ export function fetchAndRenderComments(isInitial) {
     loadingEl.textContent = 'Пожалуйста подождите, загружаю комментарии...'
     if (isInitial) {
         commentsEl.style.display = 'none'
-        addFormEl.style.display = 'none'
-        containerEl.appendChild(loadingEl)
+        if (addFormEl) {
+            addFormEl.style.display = 'none';
+        }
+        containerEl.appendChild(loadingEl);
     }
-    fetch('https://wedev-api.sky.pro/api/v1/konstantin-mikhanchuk/comments', {
+    fetch(`${baseUrl}/comments`, {
         method: 'GET',
     })
         .then((response) => {
@@ -25,7 +29,9 @@ export function fetchAndRenderComments(isInitial) {
             if (isInitial) {
                 loadingEl.remove()
                 commentsEl.style.display = 'flex'
-                addFormEl.style.display = 'flex'
+                if (addFormEl) {
+                    addFormEl.style.display = 'flex';
+                }
             }
             renderComments()
         })
@@ -38,22 +44,25 @@ export function fetchAndRenderComments(isInitial) {
             if (isInitial && loadingEl) {
                 loadingEl.remove()
                 commentsEl.style.display = 'flex'
-                addFormEl.style.display = 'flex'
+                if (addFormEl) {
+                    addFormEl.style.display = 'flex';
+                }
             }
         })
 }
-export function postComment(name, comment) {
-    return fetch(
-        'https://wedev-api.sky.pro/api/v1/konstantin-mikhanchuk/comments',
-        {
-            method: 'POST',
-            body: JSON.stringify({
-                name: name,
-                text: comment,
-                forceError: true,
-            }),
+export function postComment(comment) {
+    return fetch(`${baseUrl}/comments`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${getToken()}`
         },
-    ).then((response) => {
+        body: JSON.stringify({
+            text: comment,
+        }),
+    }).then((response) => {
+        if (response.status === 401) {
+            throw new Error('UNAUTHORIZED')
+        }
         if (response.status === 400) {
             throw new Error('BAD_REQUEST')
         }
@@ -63,3 +72,25 @@ export function postComment(name, comment) {
         return response.json()
     })
 }
+export function loginUser(login, password) {
+    return fetch('https://wedev-api.sky.pro/api/user/login', {
+        method: 'POST',
+        body: JSON.stringify({
+            login: login,
+            password: password
+        }),       
+    })   
+    .then((response) => {
+        if (response.status === 400) {
+            throw new Error('INVALID_CREDENTIALS')
+        }
+        if (response.status === 500) {
+            throw new Error('SERVER_ERROR')
+        }
+        return response.json()
+    })
+}
+
+
+
+
